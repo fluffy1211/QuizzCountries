@@ -10,71 +10,73 @@
 
 // Choisir aléatoirement le pays en passant par son code pays
 
-key = "9hN7c0pptKhpSNFXJlcRovXtWHmwcqVFF67kBEil"
+key = "Iz7zwKQPzm7heMszGK3MAzbwonqEZjW2E45pWfjO"
 
 const url = `https://countryapi.io/api/all?apikey=${key}`
 
 let countries = []
 let currentCountry = {}
-let currentQuestion = 0
+let currentQuestion = 1
 let score = 0
 
 const input = document.querySelector("input")
-const validation = document.querySelector("button")
+const validation = document.querySelector(".submit")
+const next = document.querySelector(".next")
 const pays = document.querySelector(".pays")
 const flag = document.querySelector(".flag")
 const scoreTotal = document.querySelector(".scoreTotal")
+const verdict = document.querySelector('.verdict')
 
 axios.get(url)
     .then(response => response.data)
     .then(data => {
         const countries = Object.keys(data);
-        let currentQuestion = 0;
+
+        console.log(data)
+
+        let currentQuestion = 1;
         let score = 0;
 
-        function displayQuestion() {
-            const randomIndex = Math.floor(Math.random() * countries.length);
-            const randomCode = countries[randomIndex];
-            const randomCountry = data[randomCode];
+        verdict.textContent = ""
 
-            pays.innerHTML = randomCountry.name;
-            flag.src = randomCountry.flag.medium;
-            currentCountry = randomCountry;
+        displayQuestion(countries, data, currentQuestion, score)
+});
+       
+function displayQuestion(countries, data, currentQuestion, score) {
+    scoreTotal.innerHTML = `Round ${currentQuestion} : Tu as ${score} /10`
 
-            validation.addEventListener("click", () => {
-                const answer = input.value;
-                if (answer === currentCountry.capital) {
-                    const verdict = document.createElement("p")
-                    verdict.textContent = "Bonne réponse"
-                    document.body.appendChild(verdict)
+    const randomIndex = Math.floor(Math.random() * countries.length);
+    const randomCode = countries[randomIndex];
+    const randomCountry = data[randomCode];
 
-                    score++;
-                    scoreTotal.innerHTML = `Tu as ${score} /10`
-                } else {
-                    const verdict = document.createElement("p")
-                    verdict.textContent = `Mauvaise réponse, la capitale est ${currentCountry.capital}`
-                    document.body.appendChild(verdict)
-                }
+    pays.innerHTML = randomCountry.name;
+    flag.src = randomCountry.flag.medium;
+    currentCountry = randomCountry;
 
-                input.value = ""
-                currentQuestion++
+    validation.addEventListener("click", () => {
+        const answer = input.value.toLowerCase().replace(' ', '')
 
-             
-            });
-        }
-
-        if (currentQuestion < 10) {
-            displayQuestion();
+        if (answer === currentCountry.capital.toLowerCase().replace(' ', '')) {
+            verdict.textContent = "Bonne réponse"
+            score++;
+            scoreTotal.innerHTML = `Round ${currentQuestion} : Tu as ${score} /10`
+            input.value = ""
         } else {
-            const endMessage = document.createElement("p");
-            endMessage.textContent = "Fin du jeu";
-            document.body.appendChild(endMessage);
+            verdict.textContent = `Mauvaise réponse, la capitale est ${currentCountry.capital}`
+            input.value = ""
         }
     });
-       
-    
 
-
-
+    next.addEventListener('click', () => {
+        if (currentQuestion < 10) {
+            currentQuestion++
+            displayQuestion(countries, data, currentQuestion, score)
+        } else {
+            verdict.textContent = `Quiz terminé !`
+            scoreTotal.innerHTML = `Tu as un score global de ${score} /10`
+        }
+        
+    })
+}
 
 
